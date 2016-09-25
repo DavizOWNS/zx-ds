@@ -1,0 +1,187 @@
+<project name="dfs-2016" basedir="." default="help">
+	
+	<property file="README"/>
+
+	<property name="product" value="dfs"/>
+
+	<property name="src.dir" value="src"/>
+	<property name="lib.dir" value="lib"/>
+	<property name="build.dir" value="bin"/>
+
+	<property name="lockservice.mainclass" value="dfs.LockService"/>	
+	<property name="lockservice.hostname" value="localhost"/>	
+	<property name="lockservice.port" value="9001"/>	
+
+	<property name="extentservice.mainclass" value="dfs.ExtentService"/>	
+	<property name="extentservice.hostname" value="localhost"/>	
+	<property name="extentservice.port" value="8001"/>	
+	<property name="extentservice.rootpath" value="extent"/>	
+
+	<property name="dfsservice.mainclass" value="dfs.DFSService"/>	
+	<property name="dfsservice.hostname" value="localhost"/>	
+	<property name="dfsservice.port" value="7001"/>	
+
+	<property name="dfs.mainclass" value="dfs.DFS"/>	
+
+	<path id="libs">
+		<fileset dir="${lib.dir}" includes="**/*.jar"/>
+	</path>
+	
+	<target name="help">
+		<echo>
+============================================================
+Distributed File System
+ 
+Student project: dfs-2016
+Course:          Distributed Systems (fall 2016/2017)
+School:          http://kpi.fei.tuke.sk
+ 
+Student name:    ${student.name}
+Student ID:      ${student.id}
+Stduent login:   ${student.login}
+============================================================
+ 
+Command                   Description
+------------------------------------------------------------
+ant clean               - Clean the project
+ant build               - Create full build of the project
+ant start-lockservice   - Start LockService servers
+ant stop-lockservice    - Stop LockService servers
+ant start-extentservice - Start ExtentService servers
+ant stop-extentservice  - Stop ExtentService servers
+ant start-dfsservice    - Start DFSService servers
+ant stop-dfsservice     - Stop DFSService servers
+ant run                 - Run client
+ant test-lab1           - Perform test for Lab #1
+ant test-lab2           - Perform test for Lab #2
+ant test-lab3           - Perform test for Lab #3
+ant test-lab4           - Perform test for Lab #4
+		</echo>
+	</target>
+	
+	<target name="clean">
+		<delete dir="${build.dir}"/>
+	</target>
+
+	<target name="build">
+		<mkdir dir="${build.dir}"/>
+		<javac includeantruntime="false" srcdir="${src.dir}" destdir="${build.dir}" classpathref="libs"/>
+		<jar destfile="${build.dir}/${product}.jar" basedir="${build.dir}" includes="**/*.*">
+			<manifest>
+				<attribute name="Product" value="${product}"/>
+				<attribute name="Author" value="${student.name}"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="start-lockservice">
+		<java classname="${lockservice.mainclass}" fork="true">
+   			<arg line="start ${lockservice.port}"/>
+      		<classpath>
+				<path refid="libs"/>
+      	        <fileset file="${build.dir}/${product}.jar"/>
+			</classpath>
+		</java>
+	</target>
+
+	<target name="start-extentservice">
+		<java classname="${extentservice.mainclass}" fork="true">
+   			<arg line="start ${extentservice.port} ${extentservice.rootpath}"/>
+      		<classpath>
+				<path refid="libs"/>
+      	        <fileset file="${build.dir}/${product}.jar"/>
+			</classpath>
+		</java>
+	</target>
+
+	<target name="start-dfsservice">
+		<java classname="${dfsservice.mainclass}" fork="true">
+   			<arg line="start ${dfsservice.port} ${extentservice.hostname} ${extentservice.port} ${lockservice.hostname} ${lockservice.port}"/>
+      		<classpath>
+				<path refid="libs"/>
+      	        <fileset file="${build.dir}/${product}.jar"/>
+			</classpath>
+		</java>
+	</target>
+
+	<target name="stop-lockservice">
+		<java classname="${lockservice.mainclass}" fork="true">
+   			<arg line="stop ${lockservice.port}"/>
+      		<classpath>
+				<path refid="libs"/>
+      	        <fileset file="${build.dir}/${product}.jar"/>
+			</classpath>
+		</java>
+	</target>
+
+	<target name="stop-extentservice">
+		<java classname="${extentservice.mainclass}" fork="true">
+   			<arg line="stop ${extentservice.port}"/>
+      		<classpath>
+				<path refid="libs"/>
+      	        <fileset file="${build.dir}/${product}.jar"/>
+			</classpath>
+		</java>
+	</target>
+
+	<target name="stop-dfsservice">
+		<java classname="${dfsservice.mainclass}" fork="true">
+   			<arg line="stop ${dfsservice.port}"/>
+      		<classpath>
+				<path refid="libs"/>
+      	        <fileset file="${build.dir}/${product}.jar"/>
+			</classpath>
+		</java>
+	</target>
+
+	<target name="run">
+		<java classname="${dfs.mainclass}" fork="true">
+   			<arg line="${dfsservice.hostname} ${dfsservice.port}"/>
+      		<classpath>
+				<path refid="libs"/>
+      	        <fileset file="${build.dir}/${product}.jar"/>
+			</classpath>
+		</java>
+	</target>
+
+	<target name="test-lab1">
+		<java classname="dfs.Test" fork="true">
+   			<arg line="dfs.test.Lab1"/>
+      		<classpath>
+				<path refid="libs"/>
+      	        <fileset file="${build.dir}/${product}.jar"/>
+			</classpath>
+		</java>
+	</target>
+
+	<target name="test-lab2">
+		<java classname="dfs.Test" fork="true">
+   			<arg line="dfs.test.Lab2"/>
+      		<classpath>
+				<path refid="libs"/>
+      	        <fileset file="${build.dir}/${product}.jar"/>
+			</classpath>
+		</java>
+	</target>
+
+	<target name="test-lab3">
+		<java classname="dfs.Test" fork="true">
+   			<arg line="dfs.test.Lab3"/>
+      		<classpath>
+				<path refid="libs"/>
+      	        <fileset file="${build.dir}/${product}.jar"/>
+			</classpath>
+		</java>
+	</target>
+
+	<target name="test-lab4">
+		<java classname="dfs.Test" fork="true">
+   			<arg line="dfs.test.Lab4"/>
+      		<classpath>
+				<path refid="libs"/>
+      	        <fileset file="${build.dir}/${product}.jar"/>
+			</classpath>
+		</java>
+	</target>
+
+</project>
