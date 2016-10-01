@@ -74,6 +74,11 @@ ant test-lab4           - Perform test for Lab #4
 		</jar>
 	</target>
 
+	<target name="rebuild">
+		<antcall target="clean" />
+		<antcall target="build" />
+	</target>
+
 	<target name="start-lockservice">
 		<java classname="${lockservice.mainclass}" fork="true">
    			<arg line="start ${lockservice.port}"/>
