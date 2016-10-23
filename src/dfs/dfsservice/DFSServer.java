@@ -3,6 +3,7 @@ package dfs.dfsservice;
 import dfs.extentservice.ExtentConnector;
 import dfs.lockservice.LockConnector;
 
+import java.io.File;
 import java.io.Serializable;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
@@ -22,15 +23,15 @@ public class DFSServer implements dfs.dfsservice.DFSConnector, Serializable {
 
     private final int mPort;
     private final ExtentConnector mExtentConnector;
-    private final LockConnector mLockConnector;
+    private final LockCache lockCache;
 
     public DFSServer(int port, ExtentConnector extentConnector, LockConnector lockConnector) throws RemoteException
     {
         mPort = port;
         mExtentConnector = extentConnector;
-        mLockConnector = lockConnector;
 
         exportAndBind();
+        lockCache = new LockCacheImpl(port, lockConnector);
     }
 
     private void exportAndBind() throws RemoteException
@@ -68,12 +69,21 @@ public class DFSServer implements dfs.dfsservice.DFSConnector, Serializable {
 
     @Override
     public boolean mkdir(String path) throws RemoteException {
-        return mExtentConnector.put(path, new byte[] {});
+        String parentDir = new File(path).getParent();
+        lockCache.acquire(parentDir);
+        boolean result = mExtentConnector.put(path, new byte[] {});
+        lockCache.release(parentDir);
+
+        return result;
     }
 
     @Override
     public boolean rmdir(String path) throws RemoteException {
-        return mExtentConnector.put(path, null);
+        String lockId = path;
+        lockCache.acquire(lockId);
+        boolean result = mExtentConnector.put(path, null);
+        lockCache.release(lockId);
+        return result;
     }
 
     @Override
@@ -83,12 +93,20 @@ public class DFSServer implements dfs.dfsservice.DFSConnector, Serializable {
 
     @Override
     public boolean put(String path, byte[] bytes) throws RemoteException {
-        return mExtentConnector.put(path, bytes);
+        String lockId = path;
+        lockCache.acquire(lockId);
+        boolean result = mExtentConnector.put(path, bytes);
+        lockCache.release(lockId);
+        return result;
     }
 
     @Override
     public boolean delete(String path) throws RemoteException {
-        return mExtentConnector.put(path, null);
+        String lockId = path;
+        lockCache.acquire(lockId);
+        boolean result = mExtentConnector.put(path, null);
+        lockCache.release(lockId);
+        return result;
     }
 
     @Override
@@ -98,5 +116,6 @@ public class DFSServer implements dfs.dfsservice.DFSConnector, Serializable {
         } catch (NotBoundException e) {
             e.printStackTrace();
         }
+        lockCache.stop();
     }
 }
