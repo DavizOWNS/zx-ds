@@ -21,7 +21,7 @@ public class LockServer implements dfs.lockservice.LockConnector, Serializable {
     private static Registry registry;
 
     private final int mPort;
-    private static final Dictionary<String, Lock> acquiredLocks = new Hashtable<>();
+    private static final List<Lock> acquiredLocks = new ArrayList<>();
     private static final List<Lock> requestedLocks = new ArrayList<>();
 
     public LockServer(int port) throws RemoteException
@@ -55,10 +55,10 @@ public class LockServer implements dfs.lockservice.LockConnector, Serializable {
         System.out.print(ID +": Acquire lock: " + lockId + " for " + ownerId + "\n");
         Lock requestedLock = new Lock(lockId, ownerId, sequence);
         synchronized (acquiredLocks){
-            Lock existingLock = acquiredLocks.get(lockId);
-            if(existingLock == null)
+            Lock existingLock = findLock(requestedLock.getLockId());
+            if(existingLock == null || existingLock.getOwnerId().equals(requestedLock.getOwnerId()))
             {
-                acquiredLocks.put(lockId, requestedLock);
+                acquiredLocks.add(requestedLock);
                 return true;
             }
             else
@@ -81,12 +81,12 @@ public class LockServer implements dfs.lockservice.LockConnector, Serializable {
         System.out.print(ID + ": Release lock: " + lockId + " for " + ownerId + "\n");
         synchronized (acquiredLocks){
             System.out.println("Removing lock " + lockId);
-            acquiredLocks.remove(lockId);
+            acquiredLocks.remove(findExact(lockId));
         }
         synchronized (requestedLocks){
             for (int i = requestedLocks.size() - 1; i >=0; i--){
                 Lock lock = requestedLocks.get(i);
-                if(!lock.getLockId().equals(lockId)) continue;
+                if(!lock.getLockId().equals(lockId) && !isChild(lockId, lock.getLockId())) continue;
 
                 //call retry ?
                 String[] parts = lock.getOwnerId().split(":");
@@ -99,6 +99,42 @@ public class LockServer implements dfs.lockservice.LockConnector, Serializable {
                 requestedLocks.remove(i);
             }
         }
+    }
+
+    private Lock findExact(String lockId)
+    {
+        for(Lock lock : acquiredLocks)
+        {
+            if(lock.getLockId().equals(lockId))
+                return lock;
+        }
+
+        return null;
+    }
+    private boolean isChild(String parent, String other)
+    {
+        if(Objects.equals(parent, "/") || Objects.equals(parent, "\\"))
+            return true;
+
+        return parent.startsWith(other);
+    }
+    private Lock findLock(String lockId)
+    {
+        Lock result = null;
+        for(Lock lock : acquiredLocks)
+        {
+            if(lock.getLockId().equals("\\") || lock.getLockId().equals("/"))
+                return lock;
+            if(lock.getLockId().equals(lockId))
+                return lock;
+            if(lock.getLockId().endsWith("/"))
+            {
+                if(lockId.startsWith(lock.getLockId()))
+                    return lock;
+            }
+        }
+
+        return result;
     }
 
     private LockCacheConnector locateLockCacheConnector(int clientPort) throws RemoteException{

@@ -16,7 +16,8 @@ import java.util.*;
  */
 public class LockCacheImpl implements dfs.dfsservice.LockCache, LockCacheConnector, Serializable {
     private final String REGISTRY_NAME = "LockCacheService";
-    private static String CLIENT_ID;
+    private String ID = UUID.randomUUID().toString();
+    private String CLIENT_ID;
     private static Registry registry;
 
     private static final Set<String> locks = new HashSet<>();
@@ -65,7 +66,7 @@ public class LockCacheImpl implements dfs.dfsservice.LockCache, LockCacheConnect
      */
     @Override
     public void acquire(String lockId) {
-        System.out.print("LockCache: Acquire lock: " + lockId + "\n");
+        System.out.print("LockCache[" + ID + "]: Acquire lock: " + lockId + "\n");
 
         synchronized (cachedLocks){
             if(cachedLocks.contains(lockId)){
@@ -98,7 +99,7 @@ public class LockCacheImpl implements dfs.dfsservice.LockCache, LockCacheConnect
      */
     @Override
     public void release(String lockId) {
-        System.out.print("LockCache: Release lock: " + lockId + "\n");
+        System.out.print("LockCache[" + ID + "]: Release lock: " + lockId + "\n");
 
         synchronized (pendingRevokes){
             if(pendingRevokes.contains(lockId)){
@@ -128,7 +129,7 @@ public class LockCacheImpl implements dfs.dfsservice.LockCache, LockCacheConnect
      */
     @Override
     public void doRelease() {
-        System.out.print("LockCache: doRelease" + "\n");
+        System.out.print("LockCache[" + ID + "]: doRelease" + "\n");
 
         synchronized (cachedLocks){
             for(String lockId : cachedLocks){
@@ -148,17 +149,28 @@ public class LockCacheImpl implements dfs.dfsservice.LockCache, LockCacheConnect
      */
     @Override
     public void revoke(String lockId) throws RemoteException {
-        System.out.print("LockCache: Revoke lock: " + lockId + "\n");
+        System.out.print("LockCache[" + ID + "]: Revoke lock: " + lockId + "\n");
 
-        synchronized (cachedLocks){
+        /*//TODO
+        System.out.println("LockCache: Revoke lock: " + cachedLocks.contains(lockId));
+        return;*/
+
+        //synchronized (cachedLocks){
             if(cachedLocks.contains(lockId)){
                 cachedLocks.remove(lockId);
-                lockServer.release(lockId, CLIENT_ID);
+                new Thread(() -> {
+                    try {
+                        lockServer.release(lockId, CLIENT_ID);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+
             } else {
                 if(!pendingRevokes.contains(lockId))
                     pendingRevokes.add(lockId);
             }
-        }
+        //}
     }
 
     /**
@@ -169,7 +181,7 @@ public class LockCacheImpl implements dfs.dfsservice.LockCache, LockCacheConnect
      */
     @Override
     public void retry(String lockId, long sequence) throws RemoteException {
-        System.out.print("LockCache: Retry lock: " + lockId + "\n");
+        System.out.print("LockCache[" + ID + "]: Retry lock: " + lockId + "\n");
 
         if(lockServer.acquire(lockId, CLIENT_ID, sequence)){
             synchronized (pendingLocks){

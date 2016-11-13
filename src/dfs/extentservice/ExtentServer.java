@@ -56,6 +56,8 @@ public class ExtentServer implements dfs.extentservice.ExtentConnector, Serializ
 
     @Override
     public byte[] get(String path) throws RemoteException {
+        System.out.print("ExtentServer: get: " + path + "\n");
+
         boolean isDirectory = path.endsWith("/");
         if(isDirectory)
         {
@@ -108,7 +110,7 @@ public class ExtentServer implements dfs.extentservice.ExtentConnector, Serializ
 
     @Override
     public boolean put(String path, byte[] content) throws RemoteException {
-        System.out.println("PUT: [" + path + "] " + (content == null ? "DELETE" : (String.valueOf(content.length) + "bytes")));
+        System.out.println("ExtentServer: put: [" + path + "] " + (content == null ? "DELETE" : (String.valueOf(content.length) + "bytes")));
         boolean isDirectry = path.endsWith("/");
         boolean isEmpty = !isDirectry || isDirEmpty(path);
 
@@ -164,6 +166,8 @@ public class ExtentServer implements dfs.extentservice.ExtentConnector, Serializ
     }
 
     private void delete(File f) throws IOException {
+        System.out.print("ExtentServer: delete\n");
+
         if (f.isDirectory()) {
             for (File c : f.listFiles())
                 delete(c);

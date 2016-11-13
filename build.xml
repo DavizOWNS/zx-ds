@@ -9,16 +9,16 @@
 	<property name="build.dir" value="bin"/>
 
 	<property name="lockservice.mainclass" value="dfs.LockService"/>	
-	<property name="lockservice.hostname" value="localhost"/>	
+	<property name="lockservice.hostname" value="127.0.0.1"/>	
 	<property name="lockservice.port" value="9001"/>	
 
 	<property name="extentservice.mainclass" value="dfs.ExtentService"/>	
-	<property name="extentservice.hostname" value="localhost"/>	
+	<property name="extentservice.hostname" value="127.0.0.1"/>	
 	<property name="extentservice.port" value="8001"/>	
 	<property name="extentservice.rootpath" value="extent"/>	
 
 	<property name="dfsservice.mainclass" value="dfs.DFSService"/>	
-	<property name="dfsservice.hostname" value="localhost"/>	
+	<property name="dfsservice.hostname" value="127.0.0.1"/>	
 	<property name="dfsservice.port" value="7001"/>	
 
 	<property name="dfs.mainclass" value="dfs.DFS"/>	
@@ -65,7 +65,7 @@ ant test-lab4           - Perform test for Lab #4
 
 	<target name="build">
 		<mkdir dir="${build.dir}"/>
-		<javac includeantruntime="false" srcdir="${src.dir}" destdir="${build.dir}" classpathref="libs"/>
+		<javac debug="true" includeantruntime="false" srcdir="${src.dir}" destdir="${build.dir}" classpathref="libs"/>
 		<jar destfile="${build.dir}/${product}.jar" basedir="${build.dir}" includes="**/*.*">
 			<manifest>
 				<attribute name="Product" value="${product}"/>
@@ -111,7 +111,7 @@ ant test-lab4           - Perform test for Lab #4
 
 	<target name="stop-lockservice">
 		<java classname="${lockservice.mainclass}" fork="true">
-   			<arg line="stop ${lockservice.port}"/>
+   			<arg line="stop ${lockservice.hostname} ${lockservice.port}"/>
       		<classpath>
 				<path refid="libs"/>
       	        <fileset file="${build.dir}/${product}.jar"/>
@@ -121,7 +121,7 @@ ant test-lab4           - Perform test for Lab #4
 
 	<target name="stop-extentservice">
 		<java classname="${extentservice.mainclass}" fork="true">
-   			<arg line="stop ${extentservice.port}"/>
+   			<arg line="stop ${extentservice.hostname} ${extentservice.port}"/>
       		<classpath>
 				<path refid="libs"/>
       	        <fileset file="${build.dir}/${product}.jar"/>
@@ -131,7 +131,7 @@ ant test-lab4           - Perform test for Lab #4
 
 	<target name="stop-dfsservice">
 		<java classname="${dfsservice.mainclass}" fork="true">
-   			<arg line="stop ${dfsservice.port}"/>
+   			<arg line="stop ${dfsservice.hostname} ${dfsservice.port}"/>
       		<classpath>
 				<path refid="libs"/>
       	        <fileset file="${build.dir}/${product}.jar"/>
