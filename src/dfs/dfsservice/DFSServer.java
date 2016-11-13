@@ -24,14 +24,12 @@ public class DFSServer implements dfs.dfsservice.DFSConnector, Serializable {
     private static Registry registry;
 
     private final int mPort;
-    private final ExtentConnector mExtentConnector;
     private final LockCache lockCache;
     private final ExtentCache extentCache;
 
     public DFSServer(int port, ExtentConnector extentConnector, LockConnector lockConnector) throws RemoteException
     {
         mPort = port;
-        mExtentConnector = extentConnector;
 
         exportAndBind();
         lockCache = new LockCacheImpl(port, lockConnector);
@@ -59,21 +57,15 @@ public class DFSServer implements dfs.dfsservice.DFSConnector, Serializable {
     public List<String> dir(String path) throws RemoteException {
         System.out.print("DFSServer[" + ID + "]: dir: " + path + "\n");
 
-        if(true)
-        {
-            List<String> result = new ArrayList<>();
-            result.add("test-file");
-            return result;
-        }
-
         System.out.println("Retrieving dir for " + path);
-        byte[] dirContents = mExtentConnector.get(path);
+        byte[] dirContents = extentCache.get(path);
         if(dirContents == null)
             return null;
         List<String> result = new ArrayList<>();
         String contents = new String(dirContents);
         for(String val :contents.split(","))
         {
+            System.out.println("Adding " + val);
             result.add(val);
         }
 
@@ -85,9 +77,8 @@ public class DFSServer implements dfs.dfsservice.DFSConnector, Serializable {
         System.out.print("DFSServer[" + ID + "]: mkdir: " + path + "\n");
         String parentDir = new File(path).getParent().replace('\\', '/');
         lockCache.acquire(parentDir);
-        boolean result = mExtentConnector.put(path, new byte[] {});
-        if(!result)
-            System.out.println("Failed to create directory");
+        boolean result = extentCache.put(path, new byte[] {});
+        extentCache.update(path);
         lockCache.release(parentDir);
 
         return result;
@@ -99,7 +90,8 @@ public class DFSServer implements dfs.dfsservice.DFSConnector, Serializable {
 
         String lockId = path;
         lockCache.acquire(lockId);
-        boolean result = mExtentConnector.put(path, null);
+        boolean result = extentCache.put(path, null);
+        extentCache.update(path);
         lockCache.release(lockId);
         return result;
     }
@@ -107,7 +99,7 @@ public class DFSServer implements dfs.dfsservice.DFSConnector, Serializable {
     @Override
     public byte[] get(String path) throws RemoteException {
         System.out.print("DFSServer[" + ID + "]: get: " + path + "\n");
-        return mExtentConnector.get(path);
+        return extentCache.get(path);
     }
 
     @Override
@@ -115,7 +107,8 @@ public class DFSServer implements dfs.dfsservice.DFSConnector, Serializable {
         System.out.print("DFSServer[" + ID + "]: put: " + path + "[" + (bytes == null ? "<null>" : bytes.length) + "]" + "\n");
         String lockId = path;
         lockCache.acquire(lockId);
-        boolean result = mExtentConnector.put(path, bytes);
+        boolean result = extentCache.put(path, bytes);
+        extentCache.update(path);
         lockCache.release(lockId);
         return result;
     }
@@ -125,7 +118,8 @@ public class DFSServer implements dfs.dfsservice.DFSConnector, Serializable {
         System.out.print("DFSServer[" + ID + "]: delete: " + path + "\n");
         String lockId = path;
         lockCache.acquire(lockId);
-        boolean result = mExtentConnector.put(path, null);
+        boolean result = extentCache.put(path, null);
+        extentCache.update(path);
         lockCache.release(lockId);
         return result;
     }

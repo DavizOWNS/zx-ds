@@ -2,15 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fe55e385-4d3d-4437-aee6-aaf55ae97cdf" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/dfs/dfsservice/ExtentCacheImpl.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/dfslib-0.1.jar" afterPath="$PROJECT_DIR$/lib/dfslib-0.1.jar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/gradinglib-0.1.jar" afterPath="$PROJECT_DIR$/lib/gradinglib-0.1.jar" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build.xml" afterPath="$PROJECT_DIR$/build.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/dfs/dfsservice/DFSServer.java" afterPath="$PROJECT_DIR$/src/dfs/dfsservice/DFSServer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/dfs/dfsservice/LockCacheImpl.java" afterPath="$PROJECT_DIR$/src/dfs/dfsservice/LockCacheImpl.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/dfs/extentservice/ExtentServer.java" afterPath="$PROJECT_DIR$/src/dfs/extentservice/ExtentServer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/dfs/lockservice/LockServer.java" afterPath="$PROJECT_DIR$/src/dfs/lockservice/LockServer.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/dfs/dfsservice/ExtentCacheImpl.java" afterPath="$PROJECT_DIR$/src/dfs/dfsservice/ExtentCacheImpl.java" />
     </list>
     <ignored path="dfs-server.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -35,7 +29,7 @@
       <file leaf-file-name="LockCacheImpl.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/dfs/dfsservice/LockCacheImpl.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1398">
+            <state relative-caret-position="633">
               <caret line="130" column="18" selection-start-line="130" selection-start-column="18" selection-end-line="130" selection-end-column="18" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -47,23 +41,12 @@
       <file leaf-file-name="ExtentCacheImpl.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/dfs/dfsservice/ExtentCacheImpl.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="52" column="19" selection-start-line="52" selection-start-column="19" selection-end-line="52" selection-end-column="19" />
+            <state relative-caret-position="138">
+              <caret line="109" column="37" selection-start-line="109" selection-start-column="37" selection-end-line="109" selection-end-column="37" />
               <folding>
                 <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ExtentServer.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/dfs/extentservice/ExtentServer.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1259">
-              <caret line="24" column="0" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
-              <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="method#exportAndBind#0;class#ExtentServer#0" expanded="false" />
+                <element signature="e#3879#3880#0" expanded="true" />
+                <element signature="e#3919#3920#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -72,8 +55,8 @@
       <file leaf-file-name="DFSServer.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/dfs/dfsservice/DFSServer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="291">
-              <caret line="70" column="31" selection-start-line="70" selection-start-column="31" selection-end-line="70" selection-end-column="31" />
+            <state relative-caret-position="19">
+              <caret line="57" column="71" selection-start-line="57" selection-start-column="71" selection-end-line="57" selection-end-column="71" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="method#exportAndBind#0;class#DFSServer#0" expanded="false" />
@@ -115,8 +98,8 @@
         <option value="$PROJECT_DIR$/src/dfs/lockservice/LockServer.java" />
         <option value="$PROJECT_DIR$/src/dfs/extentservice/ExtentServer.java" />
         <option value="$PROJECT_DIR$/src/dfs/dfsservice/LockCacheImpl.java" />
-        <option value="$PROJECT_DIR$/src/dfs/dfsservice/DFSServer.java" />
         <option value="$PROJECT_DIR$/src/dfs/dfsservice/ExtentCacheImpl.java" />
+        <option value="$PROJECT_DIR$/src/dfs/dfsservice/DFSServer.java" />
       </list>
     </option>
   </component>
@@ -533,7 +516,7 @@
       <workItem from="1477168064438" duration="7424000" />
       <workItem from="1477216819449" duration="9842000" />
       <workItem from="1479054697172" duration="2017000" />
-      <workItem from="1479060482479" duration="6920000" />
+      <workItem from="1479060482479" duration="11182000" />
     </task>
     <task id="LOCAL-00001" summary="Deleted extra files">
       <created>1475341401912</created>
@@ -549,11 +532,18 @@
       <option name="project" value="LOCAL" />
       <updated>1477236809151</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="started implementing extent cache&#10;correcter lock server">
+      <created>1479067453666</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1479067453666</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="48037000" />
+    <option name="totallyTimeSpent" value="52299000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -607,7 +597,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Deleted extra files" />
     <MESSAGE value="Lab 2 finished" />
-    <option name="LAST_COMMIT_MESSAGE" value="Lab 2 finished" />
+    <MESSAGE value="started implementing extent cache&#10;correcter lock server" />
+    <option name="LAST_COMMIT_MESSAGE" value="started implementing extent cache&#10;correcter lock server" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -916,7 +907,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/dfs/dfsservice/LockCacheImpl.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1398">
+        <state relative-caret-position="633">
           <caret line="130" column="18" selection-start-line="130" selection-start-column="18" selection-end-line="130" selection-end-column="18" />
           <folding>
             <element signature="imports" expanded="true" />
@@ -924,12 +915,31 @@
         </state>
       </provider>
     </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_101/src.zip!/java/util/Hashtable.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1391">
+          <caret line="209" column="11" selection-start-line="209" selection-start-column="11" selection-end-line="209" selection-end-column="11" />
+          <folding>
+            <element signature="e#7895#7896#0" expanded="false" />
+            <element signature="e#7926#7927#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_101/src.zip!/java/util/Dictionary.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="167">
+          <caret line="84" column="26" selection-start-line="84" selection-start-column="26" selection-end-line="84" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/dfs/extentservice/ExtentServer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1259">
-          <caret line="24" column="0" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
+        <state relative-caret-position="306">
+          <caret line="73" column="34" selection-start-line="73" selection-start-column="34" selection-end-line="73" selection-end-column="34" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="imports" expanded="false" />
             <element signature="method#exportAndBind#0;class#ExtentServer#0" expanded="false" />
           </folding>
         </state>
@@ -937,18 +947,20 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/dfs/dfsservice/ExtentCacheImpl.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="52" column="19" selection-start-line="52" selection-start-column="19" selection-end-line="52" selection-end-column="19" />
+        <state relative-caret-position="138">
+          <caret line="109" column="37" selection-start-line="109" selection-start-column="37" selection-end-line="109" selection-end-column="37" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#3879#3880#0" expanded="true" />
+            <element signature="e#3919#3920#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/dfs/dfsservice/DFSServer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="291">
-          <caret line="70" column="31" selection-start-line="70" selection-start-column="31" selection-end-line="70" selection-end-column="31" />
+        <state relative-caret-position="19">
+          <caret line="57" column="71" selection-start-line="57" selection-start-column="71" selection-end-line="57" selection-end-column="71" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="method#exportAndBind#0;class#DFSServer#0" expanded="false" />
