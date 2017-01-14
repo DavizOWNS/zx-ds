@@ -93,9 +93,9 @@ public class ExtentServer implements dfs.extentservice.ExtentConnector, Serializ
 
     private boolean isDirEmpty(String path)
     {
-        /*String[] dirContents = new File(mPath + path).list();
-        return dirContents.length == 0;*/
-        int numFiles = 0;
+        String[] dirContents = new File(mPath + path).list();
+        return dirContents.length == 0;
+        /*int numFiles = 0;
         for(String val : fileSystem.keySet())
         {
             if(val.startsWith(path))
@@ -105,17 +105,18 @@ public class ExtentServer implements dfs.extentservice.ExtentConnector, Serializ
                 return false;
         }
 
-        return true;
+        return true;*/
     }
 
     @Override
     public boolean put(String path, byte[] content) throws RemoteException {
         System.out.println("ExtentServer: put: [" + path + "] " + (content == null ? "DELETE" : (String.valueOf(content.length) + "bytes")));
         boolean isDirectry = path.endsWith("/");
-        boolean isEmpty = !isDirectry || isDirEmpty(path);
 
         if(fileSystem.containsKey(path))
         {
+            boolean isEmpty = !isDirectry || isDirEmpty(path);
+
             if(content == null) {
                 //Delete
                 if(isEmpty) { //files are always empty
