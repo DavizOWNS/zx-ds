@@ -15,6 +15,8 @@ public class Manager implements IManager<View> {
     private String guid;
     private View currentView;
     private Node<View> mNode;
+    private int nextPaxosInstance = 0;
+    private final Object viewLock = new Object();
 
     public Manager(String guid)
     {
@@ -36,6 +38,18 @@ public class Manager implements IManager<View> {
     public void paxosCommit(int paxosInstance, View value)
     {
         currentView = value;
+        nextPaxosInstance = paxosInstance+1;
+    }
+
+    public void addNode(INode<View> node)
+    {
+        List<INode<View>> newView = null;
+        synchronized (viewLock)
+        {
+            newView = new ArrayList<>(currentView.getActiveNodes());
+            newView.add(node);
+        }
+        mNode.run(nextPaxosInstance++, newView, new View(newView));
     }
 
     private void doHearthbeats()
@@ -53,17 +67,20 @@ public class Manager implements IManager<View> {
                 //send hearthbeat to others
                 List<INode<View>> newView = new ArrayList<>();
                 newView.add(mNode);
-                for(INode<View> node : currentView.getActiveNodes())
+                synchronized (viewLock)
                 {
-                    if(node == this) continue;
-                    if(sendHearthbeat(node))
-                        newView.add(node);
-                }
+                    for(INode<View> node : currentView.getActiveNodes())
+                    {
+                        if(node == this) continue;
+                        if(sendHearthbeat(node))
+                            newView.add(node);
+                    }
 
-                if(newView.size() != currentView.getActiveNodes().size())
-                {
-                    //TODO initiate paxos
-                    mNode.run(0, newView, new View(newView));
+                    if(newView.size() != currentView.getActiveNodes().size())
+                    {
+                        //TODO initiate paxos
+                        mNode.run(nextPaxosInstance++, newView, new View(newView));
+                    }
                 }
             }
             else
@@ -73,16 +90,13 @@ public class Manager implements IManager<View> {
                 if(!sendHearthbeat(lowestNode))
                 {
                     //TODO initiate paxos
-                    List<INode<View>> newView = new ArrayList<>();
-                    newView.add(mNode);
-                    for(INode<View> node : currentView.getActiveNodes())
+                    synchronized (viewLock)
                     {
-                        if(node == this) continue;
-                        if(sendHearthbeat(node))
-                            newView.add(node);
-                    }
+                        List<INode<View>> newView = new ArrayList<>(currentView.getActiveNodes());
+                        newView.remove(lowestNode);
 
-                    mNode.run(0, newView, new View(newView));
+                        mNode.run(nextPaxosInstance++, newView, new View(newView));
+                    }
                 }
             }
         }
