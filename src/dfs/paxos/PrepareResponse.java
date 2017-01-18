@@ -1,9 +1,11 @@
 package dfs.paxos;
 
+import java.io.Serializable;
+
 /**
  * Created by Dávid on 14.1.2017.
  */
-class PrepareResponse<T extends IValue> {
+public class PrepareResponse<T extends IValue> implements Serializable{
     public enum State
     {
         OK,

@@ -1,5 +1,7 @@
 package dfs.paxos;
 
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -7,36 +9,40 @@ import java.util.UUID;
 /**
  * Created by Dávid on 14.1.2017.
  */
-public class Acceptor<TVal extends IValue> implements IAcceptor<TVal> {
+public class Acceptor<TVal extends IValue, TService extends Remote> implements IAcceptor<TVal> {
     //must persist across reboots
     private AcceptorState<TVal> mState;
     private Map<Integer, TVal> oldInstances;
-    private INode mNode;
+    private INode<TVal, TService> mNode;
 
-    public Acceptor(INode node)
+    public Acceptor(INode<TVal, TService> node)
     {
         this.mNode = node;
         oldInstances = new HashMap<>();
-        mState = loadState(node.getGuid());
+        try {
+            mState = loadState(node.getGuid());
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     synchronized public PrepareResponse<TVal> prepare(int agreementInstance, int id)
     {
         //if instance <= instance_h
-        if(agreementInstance <= mState.highestInstanceAccepted)
+        if(agreementInstance <= mState.getHighestAccept())
         {
             //reply oldinstance(instance, instance_value)
             return new PrepareResponse<TVal>(agreementInstance, oldInstances.get(agreementInstance), PrepareResponse.State.OLD_INSTANCE);
         }
         //else if n > n_h
-        else if (id > mState.highestPrepare)
+        else if (id > mState.getHighestPrepare())
         {
             //n_h = n
-            mState.highestPrepare = id;
+            mState.setHighestPrepare(id);
             saveState();
             //reply prepare_ok(n_a, v_a)
-            return new PrepareResponse<TVal>(mState.highestAccept, mState.highestAcceptedValue, PrepareResponse.State.OK);
+            return new PrepareResponse<TVal>(mState.getHighestAccept(), mState.getHighestAcceptedValue(), PrepareResponse.State.OK);
 
         }
 
@@ -47,12 +53,12 @@ public class Acceptor<TVal extends IValue> implements IAcceptor<TVal> {
     synchronized public boolean accept(int agreementInstance, int id, TVal value)
     {
         //if n >= n_h
-        if(id >= mState.highestPrepare)
+        if(id >= mState.getHighestPrepare())
         {
             //n_a = n
-            mState.highestAccept = id;
+            mState.setHighestAccept(id);
             //v_a = v
-            mState.highestAcceptedValue = value;
+            mState.setHighestAcceptedValue(value);
             saveState();
             //reply accept_ok(n)
             return true;
@@ -66,9 +72,15 @@ public class Acceptor<TVal extends IValue> implements IAcceptor<TVal> {
     {
         //paxos_commit(instance, v)
         oldInstances.put(agreementInstance, value);
-        if(agreementInstance > mState.highestInstanceAccepted)
-            mState.highestInstanceAccepted = agreementInstance;
+        if(agreementInstance > mState.getHighestInstanceAccepted())
+            mState.setHighestInstanceAccepted(agreementInstance);
         saveState();
+
+        try {
+            mNode.getManager().paxosCommit(agreementInstance, value);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     private void saveState()

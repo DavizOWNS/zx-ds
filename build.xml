@@ -4,7 +4,7 @@
 
 	<property name="product" value="dfs"/>
 
-	<property name="src.dir" value="src"/>
+	<property name="src.dir" value="src/dfs"/>
 	<property name="lib.dir" value="lib"/>
 	<property name="build.dir" value="bin"/>
 
@@ -73,11 +73,26 @@ ant test-lab4           - Perform test for Lab #4
 			</manifest>
 		</jar>
 	</target>
+	<target name="replication_build">
+		<mkdir dir="${build.dir}"/>
+		<javac debug="true" includeantruntime="false" srcdir="${src.dir}" destdir="${build.dir}" classpathref="libs"/>
+		<jar destfile="${build.dir}/${product}.jar" basedir="${build.dir}" includes="**/*.*">
+			<manifest>
+				<attribute name="Product" value="${product}"/>
+				<attribute name="Author" value="${student.name}"/>
+				<attribute name="Main-Class" value="dfs.replication.ReplicationModuleMain"/>
+			</manifest>
+		</jar>
+	</target>
 
 	<target name="rebuild">
 		<antcall target="clean" />
 		<antcall target="build" />
 	</target>
+    <target name="replication_rebuild">
+        <antcall target="clean" />
+        <antcall target="replication_build" />
+    </target>
 
 	<target name="start-lockservice">
 		<java classname="${lockservice.mainclass}" fork="true">

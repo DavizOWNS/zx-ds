@@ -24,6 +24,10 @@ public class LockServer implements dfs.lockservice.LockConnector, Serializable {
     private static final List<Lock> acquiredLocks = new ArrayList<>();
     private static final List<Lock> requestedLocks = new ArrayList<>();
 
+    public LockServer()
+    {
+        mPort = 0;
+    }
     public LockServer(int port) throws RemoteException
     {
         mPort = port;
