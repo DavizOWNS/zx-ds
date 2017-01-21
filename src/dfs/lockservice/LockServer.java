@@ -2,6 +2,8 @@ package dfs.lockservice;
 
 import dfs.dfsservice.LockCache;
 import dfs.dfsservice.LockCacheConnector;
+import dfs.replication.IState;
+import dfs.replication.ServiceActionResult;
 
 import java.io.Serializable;
 import java.rmi.AlreadyBoundException;
@@ -15,22 +17,23 @@ import java.util.*;
 /**
  * Created by Dávid on 1.10.2016.
  */
-public class LockServer implements dfs.lockservice.LockConnector, Serializable {
+public class LockServer implements ILockConnectorWithState, Serializable {
     private final String REGISTRY_NAME = "LockService";
     private final String ID = "LockServer["+UUID.randomUUID().toString()+"]";
     private static Registry registry;
 
     private final int mPort;
-    private static final List<Lock> acquiredLocks = new ArrayList<>();
-    private static final List<Lock> requestedLocks = new ArrayList<>();
+    private State state;
 
     public LockServer()
     {
         mPort = 0;
+        state = new State();
     }
     public LockServer(int port) throws RemoteException
     {
         mPort = port;
+        state = new State();
         //acquiredLocks = new Hashtable<>();
         //requestedLocks = new ArrayList<>();
 
@@ -58,16 +61,16 @@ public class LockServer implements dfs.lockservice.LockConnector, Serializable {
     public boolean acquire(String lockId, String ownerId, long sequence) throws RemoteException {
         System.out.print(ID +": Acquire lock: " + lockId + " for " + ownerId + "\n");
         Lock requestedLock = new Lock(lockId, ownerId, sequence);
-        synchronized (acquiredLocks){
+        synchronized (state.acquiredLocks){
             Lock existingLock = findLock(requestedLock.getLockId());
             if(existingLock == null || existingLock.getOwnerId().equals(requestedLock.getOwnerId()))
             {
-                acquiredLocks.add(requestedLock);
+                state.acquiredLocks.add(requestedLock);
                 return true;
             }
             else
             {
-                requestedLocks.add(requestedLock);
+                state.requestedLocks.add(requestedLock);
                 String[] parts = existingLock.getOwnerId().split(":");
                 LockCacheConnector cacheConnector = locateLockCacheConnector(Integer.parseInt(parts[1]));
                 if(cacheConnector != null) {
@@ -83,13 +86,13 @@ public class LockServer implements dfs.lockservice.LockConnector, Serializable {
     @Override
     public void release(String lockId, String ownerId) throws RemoteException {
         System.out.print(ID + ": Release lock: " + lockId + " for " + ownerId + "\n");
-        synchronized (acquiredLocks){
+        synchronized (state.acquiredLocks){
             System.out.println("Removing lock " + lockId);
-            acquiredLocks.remove(findExact(lockId));
+            state.acquiredLocks.remove(findExact(lockId));
         }
-        synchronized (requestedLocks){
-            for (int i = requestedLocks.size() - 1; i >=0; i--){
-                Lock lock = requestedLocks.get(i);
+        synchronized (state.requestedLocks){
+            for (int i = state.requestedLocks.size() - 1; i >=0; i--){
+                Lock lock = state.requestedLocks.get(i);
                 if(!lock.getLockId().equals(lockId) && !isChild(lockId, lock.getLockId())) continue;
 
                 //call retry ?
@@ -100,14 +103,14 @@ public class LockServer implements dfs.lockservice.LockConnector, Serializable {
                 }
                 else System.out.print("Failed to locate LockCacheConnector" + "\n");
 
-                requestedLocks.remove(i);
+                state.requestedLocks.remove(i);
             }
         }
     }
 
     private Lock findExact(String lockId)
     {
-        for(Lock lock : acquiredLocks)
+        for(Lock lock : state.acquiredLocks)
         {
             if(lock.getLockId().equals(lockId))
                 return lock;
@@ -125,7 +128,7 @@ public class LockServer implements dfs.lockservice.LockConnector, Serializable {
     private Lock findLock(String lockId)
     {
         Lock result = null;
-        for(Lock lock : acquiredLocks)
+        for(Lock lock : state.acquiredLocks)
         {
             if(lock.getLockId().equals("\\") || lock.getLockId().equals("/"))
                 return lock;
@@ -162,5 +165,22 @@ public class LockServer implements dfs.lockservice.LockConnector, Serializable {
         } catch (NotBoundException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public Object getState() throws RemoteException {
+        return state;
+    }
+
+    @Override
+    public void setState(Object state) throws RemoteException {
+        System.out.println("Received new state:\n\tacquiredLocks: " + ((State)state).acquiredLocks.size() + "\n\toldLockCount: " + this.state.acquiredLocks.size());
+        this.state = (State)state;
+    }
+
+    private class State implements Serializable
+    {
+        List<Lock> acquiredLocks = new ArrayList<>();
+        List<Lock> requestedLocks = new ArrayList<>();
     }
 }

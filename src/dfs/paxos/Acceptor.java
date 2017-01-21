@@ -1,5 +1,7 @@
 package dfs.paxos;
 
+import dfs.replication.IState;
+
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.HashMap;
@@ -9,7 +11,7 @@ import java.util.UUID;
 /**
  * Created by Dávid on 14.1.2017.
  */
-public class Acceptor<TVal extends IValue, TService extends Remote> implements IAcceptor<TVal> {
+public class Acceptor<TVal extends IValue, TService extends IState> implements IAcceptor<TVal> {
     //must persist across reboots
     private AcceptorState<TVal> mState;
     private Map<Integer, TVal> oldInstances;
@@ -29,15 +31,18 @@ public class Acceptor<TVal extends IValue, TService extends Remote> implements I
     @Override
     synchronized public PrepareResponse<TVal> prepare(int agreementInstance, int id)
     {
+        System.out.println("ACCEPTOR: prepare instance: " + agreementInstance + "   id: " + id);
         //if instance <= instance_h
-        if(agreementInstance <= mState.getHighestAccept())
+        if(agreementInstance <= mState.getHighestInstanceAccepted())
         {
+            System.out.println("ACCEPTOR: oldInstance(" + agreementInstance + ") id: " + id);
             //reply oldinstance(instance, instance_value)
             return new PrepareResponse<TVal>(agreementInstance, oldInstances.get(agreementInstance), PrepareResponse.State.OLD_INSTANCE);
         }
         //else if n > n_h
         else if (id > mState.getHighestPrepare())
         {
+            System.out.println("ACCEPTOR: id>prepare\tid: " + id + "  highest_prep: " + mState.getHighestPrepare());
             //n_h = n
             mState.setHighestPrepare(id);
             saveState();
@@ -46,6 +51,7 @@ public class Acceptor<TVal extends IValue, TService extends Remote> implements I
 
         }
 
+        System.out.println("ACCEPTOR: prepare failed  instance: " + agreementInstance + "   id: " + id);
         return null;
     }
 
@@ -55,6 +61,7 @@ public class Acceptor<TVal extends IValue, TService extends Remote> implements I
         //if n >= n_h
         if(id >= mState.getHighestPrepare())
         {
+            System.out.println("ACCEPTOR: accept_ok   instance: " + agreementInstance + "   id: " + id);
             //n_a = n
             mState.setHighestAccept(id);
             //v_a = v
@@ -64,6 +71,7 @@ public class Acceptor<TVal extends IValue, TService extends Remote> implements I
             return true;
         }
 
+        System.out.println("ACCEPTOR: accept failed  instance: " + agreementInstance + "   id: " + id);
         return false;
     }
 

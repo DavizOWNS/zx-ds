@@ -1,9 +1,11 @@
 package dfs.lockservice;
 
+import java.io.Serializable;
+
 /**
  * Created by DAVID on 23.10.2016.
  */
-public class Lock {
+public class Lock implements Serializable{
     private final String lockId;
     private final String ownerId;
     private final long sequenceId;

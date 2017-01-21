@@ -19,6 +19,7 @@ public class AcceptorState<T extends IValue> implements Serializable{
     }
 
     public void setHighestInstanceAccepted(int highestInstanceAccepted) {
+        System.out.println("Setting highest instance accepted: " + highestInstanceAccepted);
         this.highestInstanceAccepted = highestInstanceAccepted;
     }
 

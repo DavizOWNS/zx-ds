@@ -3,6 +3,8 @@ package dfs.management;
 import dfs.paxos.INode;
 import dfs.paxos.Node;
 import dfs.replication.IReplicatedService;
+import dfs.replication.IState;
+import dfs.replication.ReplicatedService;
 import dfs.util.SerializableObject;
 import jdk.nashorn.internal.codegen.CompilerConstants;
 
@@ -18,17 +20,18 @@ import java.util.concurrent.*;
 /**
  * Created by Dávid on 14.1.2017.
  */
-public class Manager<TService extends  Remote> extends UnicastRemoteObject implements Serializable, IManager<View<TService>, TService> {
+public class Manager<TService extends IState> extends UnicastRemoteObject implements Serializable, IManager<View<TService>, TService> {
 
     private String guid;
     private View<TService> currentView;
     private Node<View<TService>, TService> mNode;
-    private int nextPaxosInstance = 0;
+    private int nextPaxosInstance = 1;
     private final SerializableObject viewLock;
     private boolean isRunning;
-    private IReplicatedService<TService> service;
+    private ReplicatedService<TService> service;
+    private int currentViewId = 0;
 
-    public Manager(String guid, IReplicatedService<TService> service) throws RemoteException {
+    public Manager(String guid, ReplicatedService<TService> service) throws RemoteException {
         super();
         this.viewLock = new SerializableObject();
         this.guid = guid;
@@ -46,6 +49,7 @@ public class Manager<TService extends  Remote> extends UnicastRemoteObject imple
     public void paxosCommit(int paxosInstance, View<TService> value)
     {
         currentView = value;
+        currentViewId = paxosInstance;
         nextPaxosInstance = paxosInstance+1;
 
         System.out.println("["+ guid +"]Paxos successfull. instance: " + paxosInstance + "   nodes:");
@@ -57,6 +61,8 @@ public class Manager<TService extends  Remote> extends UnicastRemoteObject imple
                 e.printStackTrace();
             }
         }
+
+        service.commitChange(value, paxosInstance);
     }
 
     @Override
@@ -67,14 +73,30 @@ public class Manager<TService extends  Remote> extends UnicastRemoteObject imple
     public void addNode(INode<View<TService>, TService> node)
     {
         List<INode<View<TService>, TService>> newView = null;
+        System.out.println("Waiting for lock");
         synchronized (viewLock)
         {
             newView = new ArrayList<>(currentView.getActiveNodes());
             newView.add(node);
         }
+        invokePaxos(newView);
+    }
+    public void removeNode(INode<View<TService>, TService> node)
+    {
+        List<INode<View<TService>, TService>> newView = null;
+        System.out.println("Waiting for lock");
+        synchronized (viewLock)
+        {
+            newView = new ArrayList<>(currentView.getActiveNodes());
+            newView.remove(node);
+        }
+        invokePaxos(newView);
+    }
+    private void invokePaxos(List<INode<View<TService>, TService>> nodes)
+    {
         System.out.println("[" + getId() + "]Starting paxos: " + (nextPaxosInstance));
         try {
-            mNode.run(nextPaxosInstance++, newView, new View<TService>(newView));
+            mNode.run(nextPaxosInstance++, nodes, new View<TService>(nodes));
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -89,7 +111,7 @@ public class Manager<TService extends  Remote> extends UnicastRemoteObject imple
     }
     public void doHearthbeat()
     {
-        System.out.println("["+ getId() + "] doing hearthbeat... [" + currentView.getActiveNodes().size() + "]");
+        //System.out.println("["+ getId() + "] doing hearthbeat... [" + currentView.getActiveNodes().size() + "]");
         try {
             Thread.sleep(3000);
         } catch (InterruptedException e) {
@@ -118,11 +140,11 @@ public class Manager<TService extends  Remote> extends UnicastRemoteObject imple
                         e.printStackTrace();
                     }
                     boolean isAlive = sendHearthbeat(node);
-                    try {
+                    /*try {
                         System.out.println("[" + getId() + "] " + node.getGuid() + " alive: " + isAlive);
                     } catch (RemoteException e) {
                         e.printStackTrace();
-                    }
+                    }*/
                     if(isAlive)
                         newView.add(node);
                 }
@@ -148,11 +170,11 @@ public class Manager<TService extends  Remote> extends UnicastRemoteObject imple
                 e.printStackTrace();
             }
             boolean isAlive = sendHearthbeat(lowestNode);
-            try {
+            /*try {
                 System.out.println("[" + getId() + "] " + lowestNode.getGuid() + " alive: " + isAlive);
             } catch (RemoteException e) {
                 e.printStackTrace();
-            }
+            }*/
             if(!isAlive)
             {
                 //TODO initiate paxos
@@ -200,6 +222,10 @@ public class Manager<TService extends  Remote> extends UnicastRemoteObject imple
         }
     }
 
+    public IManager<View<TService>, TService> getMaster() throws RemoteException {
+        return getMasterNode().getManager();
+    }
+
     public void dispose()
     {
         isRunning = false;
@@ -217,6 +243,10 @@ public class Manager<TService extends  Remote> extends UnicastRemoteObject imple
     public String getId() {
         return guid;
     }
+    public int getViewID()
+    {
+        return currentViewId;
+    }
 
     public INode<View<TService>, TService> getNode() {
         return mNode;
@@ -229,5 +259,8 @@ public class Manager<TService extends  Remote> extends UnicastRemoteObject imple
     public INode<View<TService>, TService> getMasterNode()
     {
         return currentView.getActiveNodes().get(0);
+    }
+    public boolean isMaster() throws RemoteException {
+        return currentView.getActiveNodes().get(0).getGuid().equals(getId());
     }
 }

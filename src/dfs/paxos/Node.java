@@ -1,6 +1,7 @@
 package dfs.paxos;
 
 import dfs.management.IManager;
+import dfs.replication.IState;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -11,7 +12,7 @@ import java.util.UUID;
 /**
  * Created by Dávid on 14.1.2017.
  */
-public class Node<TVal extends IValue, TService extends Remote> extends UnicastRemoteObject implements INode<TVal, TService>{
+public class Node<TVal extends IValue, TService extends IState> extends UnicastRemoteObject implements INode<TVal, TService>{
 
     private String guid;
     private IAcceptor<TVal> mAcceptor;
@@ -48,7 +49,7 @@ public class Node<TVal extends IValue, TService extends Remote> extends UnicastR
 
     @Override
     public void hearthbeat(String fromId) {
-        System.out.println("Hearthbeat: " + fromId + " -> " + getGuid());
+        //System.out.println("Hearthbeat: " + fromId + " -> " + getGuid());
     }
 
     @Override

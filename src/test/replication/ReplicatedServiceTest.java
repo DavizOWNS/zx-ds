@@ -1,6 +1,8 @@
 package test.replication;
 
+import dfs.dfsservice.LockCacheImpl;
 import dfs.replication.ReplicatedService;
+import dfs.test.ReplicatedLockConnectorProxy;
 import org.junit.Test;
 
 import java.rmi.RemoteException;
@@ -36,4 +38,27 @@ public class ReplicatedServiceTest {
             e.printStackTrace();
         }
     }*/
+
+    @Test
+    public void testIt()
+    {
+        try {
+            ReplicatedLockConnectorProxy proxy = new ReplicatedLockConnectorProxy(6501);
+            LockCacheImpl client = new LockCacheImpl(proxy);
+
+            client.acquire("/home");
+            client.release("/home");
+            client.doRelease();
+
+            System.in.read();
+
+            client.acquire("/home");
+            client.release("/home");
+            client.doRelease();
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+    }
 }

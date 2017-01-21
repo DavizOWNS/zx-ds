@@ -24,10 +24,16 @@ public class LockCacheImpl implements dfs.dfsservice.LockCache, LockCacheConnect
     private static final Set<String> cachedLocks = new HashSet<>();
     private static final Dictionary<Long, String> pendingLocks = new Hashtable<>();
     private static final Set<String> pendingRevokes = new HashSet<>();
-    private static LockConnector lockServer;
+    private LockConnector lockServer;
     private int port;
     private static long nextId;
 
+    public LockCacheImpl(LockConnector lockConnector)
+    {
+        this.port = 0;
+        lockServer = lockConnector;
+        CLIENT_ID = "127.0.0.1:" + port + ":" + UUID.randomUUID();
+    }
     public LockCacheImpl(int port, LockConnector lockServer) throws RemoteException
     {
         this.port = port;
@@ -35,7 +41,7 @@ public class LockCacheImpl implements dfs.dfsservice.LockCache, LockCacheConnect
         //pendingRevokes = new HashSet<>();
         //cachedLocks = new HashSet<>();
         //pendingLocks = new Hashtable<>();
-        LockCacheImpl.lockServer = lockServer;
+        lockServer = lockServer;
 
         exportAndBind();
 
